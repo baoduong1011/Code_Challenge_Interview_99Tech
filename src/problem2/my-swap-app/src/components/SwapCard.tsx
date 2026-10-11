@@ -10,7 +10,7 @@ import {
   notification,
 } from "antd";
 import { FiRefreshCcw } from "react-icons/fi";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SettingOutlined, DownOutlined } from "@ant-design/icons";
 import type { CoinType, Currency } from "../types/coin";
 import { getListCoin } from "../hooks/getListCoin";
@@ -122,17 +122,19 @@ const SwapCard = () => {
     setIsModalVisible(false);
   };
 
-  const renderOptionsCoin = (key: boolean) =>
-    listCoin
-      .filter(
-        (coin) =>
-          coin.currency !== (key ? sellingCoin.currency : buyingCoin.currency)
-      )
-      .map((coin) => (
-        <Option clas key={coin.currency} value={coin.currency}>
-          <TokenOption label={coin.currency} />
-        </Option>
-      ));
+  const renderOptionsCoin = useMemo(() => {
+    return (key: boolean) =>
+      listCoin
+        .filter(
+          (coin) =>
+            coin.currency !== (key ? sellingCoin.currency : buyingCoin.currency)
+        )
+        .map((coin) => (
+          <Option clas key={coin.currency} value={coin.currency}>
+            <TokenOption label={coin.currency} />
+          </Option>
+        ));
+  }, [listCoin, sellingCoin.currency, buyingCoin.currency]);
 
   const fetchListCoin = async () => {
     try {
@@ -199,10 +201,10 @@ const SwapCard = () => {
   }, [sellingCoin, buyingCoin]);
 
   return (
-    <Spin spinning={isLoading} tip="Loading..." size="large">
-      <div className="w-full max-w-md mx-auto bg-white/5 text-white rounded-2xl p-6 shadow-2xl backdrop-blur-md border border-white/10 font-sans">
-        <div className="flex justify-between items-center mb-4">
-          <div className="font-semibold mb-6">
+    <Spin spinning={isLoading} tip="Loading..." size="large" className="block w-full">
+      <div className="w-full max-w-md min-w-0 mx-auto bg-white/5 text-white rounded-2xl p-4 sm:p-6 shadow-2xl backdrop-blur-md border border-white/10 font-sans">
+        <div className="flex justify-between items-start gap-3 mb-4 min-w-0">
+          <div className="min-w-0 font-semibold">
             <GlitchText
               speed={1}
               enableShadows={true}
@@ -214,7 +216,7 @@ const SwapCard = () => {
             <WaveIcons />
           </div>
           <Dropdown overlay={languageMenu} placement="bottomRight">
-            <div className="text-xl font-semibold mb-6 cursor-pointer">
+            <div className="shrink-0 cursor-pointer pt-1 text-xl font-semibold">
               <SettingOutlined />
             </div>
           </Dropdown>
@@ -233,12 +235,13 @@ const SwapCard = () => {
             <div className="flex justify-between text-sm mb-1">
               <span className="font-bold">{t("amountToSend")}</span>
             </div>
-            <div className="flex justify-between items-center space-x-2">
+            <div className="flex min-w-0 items-center gap-2">
               <Input
                 value={sellingCoin.amount}
                 type="number"
                 min={0}
                 onChange={(e) => {
+                  // 1E5 = 100000
                   setSellingCoin((prev) => ({
                     ...prev,
                     amount: parseFloat(e.target.value || "0"),
@@ -247,7 +250,7 @@ const SwapCard = () => {
                     setHasInputError(false);
                   }
                 }}
-                className="bg-transparent text-white text-2xl font-bold w-full p-2"
+                className="min-w-0 flex-1 bg-transparent p-2 text-xl font-bold text-white sm:text-2xl"
                 style={{
                   backgroundColor: "transparent",
                   color: "white",
@@ -264,7 +267,7 @@ const SwapCard = () => {
                     .includes(input.toLowerCase())
                 }
                 value={sellingCoin.currency}
-                className="w-64 rounded-lg"
+                className="w-32 shrink-0 rounded-lg sm:w-36"
                 dropdownStyle={{ background: "white", color: "white" }}
                 suffixIcon={
                   <DownOutlined style={{ color: "#fff", fontSize: 12 }} />
@@ -318,12 +321,12 @@ const SwapCard = () => {
             <div className="flex justify-between text-sm mb-1">
               <span className="font-bold">{t("amountToReceive")}</span>
             </div>
-            <div className="flex justify-between items-center space-x-2">
+            <div className="flex min-w-0 items-center gap-2">
               <Input
                 type="number"
                 value={buyingCoin.amount}
                 disabled
-                className="bg-transparent text-white text-2xl font-bold w-full p-2"
+                className="min-w-0 flex-1 bg-transparent p-2 text-xl font-bold text-white sm:text-2xl"
                 style={{
                   backgroundColor: "transparent",
                   color: "white",
@@ -339,7 +342,7 @@ const SwapCard = () => {
                 }
                 showSearch
                 value={buyingCoin.currency}
-                className="w-64 rounded-lg"
+                className="w-32 shrink-0 rounded-lg sm:w-36"
                 dropdownStyle={{ background: "white", color: "white" }}
                 suffixIcon={
                   <DownOutlined style={{ color: "#fff", fontSize: 12 }} />
@@ -368,24 +371,28 @@ const SwapCard = () => {
           </div>
         </motion.div>
 
-        <div className="text-sm text-gray-300 space-y-1 mb-6">
-          <div className="flex justify-between">
-            <span>{t("bestPrice")}</span>
-            <span>
+        <div className="mb-6 space-y-2 text-xs text-gray-300 sm:text-sm">
+          <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between">
+            <span className="shrink-0">{t("bestPrice")}</span>
+            <span className="break-all text-right">
               1 {buyingCoin.currency} ={" "}
-              {(buyingCoin.price / sellingCoin.price).toFixed(10)}{" "}
+              {sellingCoin.price
+                ? (buyingCoin.price / sellingCoin.price).toFixed(6)
+                : "0"}{" "}
               {sellingCoin.currency}
             </span>
           </div>
-          <div className="flex justify-between">
-            <span>{t("minimumReceived")}</span>
-            <span>
+          <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between">
+            <span className="shrink-0">{t("minimumReceived")}</span>
+            <span className="break-all text-right">
               {buyingCoin.amount.toFixed(6)} {buyingCoin.currency}
             </span>
           </div>
-          <div className="flex justify-between">
-            <span>{t("totalReceived")}</span>
-            <span>${(buyingCoin.amount * buyingCoin.price).toFixed(2)}</span>
+          <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between">
+            <span className="shrink-0">{t("totalReceived")}</span>
+            <span className="text-right">
+              ${(buyingCoin.amount * buyingCoin.price).toFixed(2)}
+            </span>
           </div>
         </div>
 

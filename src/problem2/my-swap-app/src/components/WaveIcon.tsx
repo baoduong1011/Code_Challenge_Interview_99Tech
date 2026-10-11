@@ -5,13 +5,14 @@ const icons = ["btc", "eth", "bnb", "lunc", "sei"];
 
 const WaveIcons = () => {
   return (
-    <div className="mt-3">
-      <div className="flex space-x-3 items-center">
+    <div className="mt-2 overflow-hidden">
+      <div className="flex space-x-1.5 sm:space-x-3 items-center">
         {icons.map((symbol, index) => (
           <motion.div
             key={symbol}
+            className="h-6 w-6 sm:h-[34px] sm:w-[34px]"
             animate={{
-              y: [0, -10, 0],
+              y: [0, -8, 0],
             }}
             transition={{
               duration: 1.5,
@@ -23,7 +24,7 @@ const WaveIcons = () => {
             <TokenIcon
               symbol={symbol}
               variant="mono"
-              size="34"
+              size="24"
               color="#FFFFFF"
             />
           </motion.div>
